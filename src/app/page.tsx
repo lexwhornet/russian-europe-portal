@@ -17,7 +17,6 @@ import Footer from "@/components/Footer";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  await seedDatabase();
   const [allPosts, allPresentations, allArticles, buyingContent, partnerContent, allMediaLinks] =
     await Promise.all([
       db.select().from(posts).where(eq(posts.published, true)).orderBy(desc(posts.createdAt)),
