@@ -1,28 +1,20 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
 const databaseUrl = process.env.DATABASE_URL || "";
 
-const globalForDb = globalThis as typeof globalThis & {
-  __neonPool?: Pool;
-};
-
-function getPool() {
+function getClient() {
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is required");
   }
-  if (!globalForDb.__neonPool) {
-    globalForDb.__neonPool = new Pool({ connectionString: databaseUrl });
-  }
-  return globalForDb.__neonPool;
+  return neon(databaseUrl);
 }
 
-// Lazy proxy: db calls will only connect when actually used at runtime,
-// not during the build step.
-export const pool = new Proxy({} as Pool, {
+// Lazy proxy so db is only created at runtime, not build time
+export const db = new Proxy({} as ReturnType<typeof drizzle>, {
   get(_target, prop) {
-    return (getPool() as unknown as Record<string | symbol, unknown>)[prop];
+    const client = getClient();
+    const d = drizzle({ client });
+    return (d as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
-
-export const db = drizzle({ client: pool });
