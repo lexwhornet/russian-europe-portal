@@ -14,7 +14,7 @@ import BlogSection from "@/components/BlogSection";
 import ChessSection from "@/components/ChessSection";
 import Footer from "@/components/Footer";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // ISR cache for 60 seconds to make page loads lightning fast and instant
 
 export default async function HomePage() {
   const [allPosts, allPresentations, allArticles, buyingContent, partnerContent, allMediaLinks] =
