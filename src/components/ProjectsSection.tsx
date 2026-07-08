@@ -73,8 +73,21 @@ function ImageCarousel({ images, name }: { images: string[]; name: string }) {
   const [current, setCurrent] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
-  const prev = () => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1));
+  const prev = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setCurrent((c) => (c === 0 ? images.length - 1 : c - 1));
+  };
+
+  const next = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setCurrent((c) => (c === images.length - 1 ? 0 : c + 1));
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
@@ -83,42 +96,58 @@ function ImageCarousel({ images, name }: { images: string[]; name: string }) {
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStart === null) return;
     const diff = touchStart - e.changedTouches[0].clientX;
-    if (diff > 50) next();
-    if (diff < -50) prev();
+    if (diff > 40) next();
+    if (diff < -40) prev();
     setTouchStart(null);
   };
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden shadow-2xl"
+      className="relative rounded-2xl overflow-hidden shadow-2xl select-none group"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Clickable transparent left/right halves for effortless sliding on click/tap */}
+      <div
+        onClick={prev}
+        className="absolute left-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
+        title="Предыдущее фото"
+      />
+      <div
+        onClick={next}
+        className="absolute right-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
+        title="Следующее фото"
+      />
+
       <img
         src={images[current]}
         alt={`${name} - фото ${current + 1}`}
         className="w-full aspect-[4/3] object-cover"
         draggable={false}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent pointer-events-none z-0" />
 
-      {/* Navigation arrows — always visible */}
+      {/* Navigation arrows — always visible and high z-index */}
       {images.length > 1 && (
         <>
           <button
+            type="button"
             onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 hover:bg-black/70 active:scale-95 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-20 cursor-pointer pointer-events-auto shadow-lg"
+            aria-label="Предыдущее фото"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
+            type="button"
             onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 hover:bg-black/70 active:scale-95 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-20 cursor-pointer pointer-events-auto shadow-lg"
+            aria-label="Следующее фото"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </>
@@ -126,28 +155,34 @@ function ImageCarousel({ images, name }: { images: string[]; name: string }) {
 
       {/* Counter badge */}
       {images.length > 1 && (
-        <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-full z-20 pointer-events-none shadow">
           {current + 1} / {images.length}
         </div>
       )}
 
       {/* Dots */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20 pointer-events-auto">
           {images.map((_, idx) => (
             <button
+              type="button"
               key={idx}
-              onClick={() => setCurrent(idx)}
-              className={`h-2.5 rounded-full transition-all ${
-                idx === current ? "bg-white w-7" : "bg-white/50 hover:bg-white/80 w-2.5"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCurrent(idx);
+              }}
+              className={`h-3 rounded-full transition-all cursor-pointer shadow ${
+                idx === current ? "bg-gold-400 w-8" : "bg-white/70 hover:bg-white w-3"
               }`}
+              aria-label={`Перейти к фото ${idx + 1}`}
             />
           ))}
         </div>
       )}
 
-      <div className="absolute bottom-12 left-6">
-        <h3 className="text-2xl font-bold text-white drop-shadow-lg">{name}</h3>
+      <div className="absolute bottom-12 left-6 z-10 pointer-events-none">
+        <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">{name}</h3>
       </div>
     </div>
   );
