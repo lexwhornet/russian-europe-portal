@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "russian-europe-portal",
+  "compatibility_date": "2026-07-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  },
+  "vars": {
+    "DATABASE_URL": "postgresql://neondb_owner:npg_8CBMJLkDgmn2@ep-quiet-thunder-as4244n7-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require",
+    "JWT_SECRET": "re-portal-secret-2024-xyz"
+  }
+}
