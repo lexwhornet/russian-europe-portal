@@ -5,7 +5,8 @@ let _db: NeonHttpDatabase | null = null;
 
 export function getDb(): NeonHttpDatabase {
   if (_db) return _db;
-  const url = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_8CBMJLkDgmn2@ep-quiet-thunder-as4244n7-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+  // Always use Neon remote database so both local preview and Cloudflare workers use the exact same Neon client
+  const url = "postgresql://neondb_owner:npg_8CBMJLkDgmn2@ep-quiet-thunder-as4244n7-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require";
   const client: NeonQueryFunction<false, false> = neon(url);
   _db = drizzle({ client });
   return _db;
