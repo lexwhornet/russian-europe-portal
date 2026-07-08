@@ -90,7 +90,7 @@ function ImageCarousel({ images, name }: { images: string[]; name: string }) {
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden shadow-2xl"
+      className="relative rounded-2xl overflow-hidden shadow-2xl select-none"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -100,22 +100,26 @@ function ImageCarousel({ images, name }: { images: string[]; name: string }) {
         className="w-full aspect-[4/3] object-cover"
         draggable={false}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 to-transparent pointer-events-none z-[1]" />
 
       {/* Navigation arrows — always visible */}
       {images.length > 1 && (
         <>
           <button
-            onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-10 cursor-pointer"
+            aria-label="Предыдущее фото"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
-            onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all z-10 cursor-pointer"
+            aria-label="Следующее фото"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -126,27 +130,29 @@ function ImageCarousel({ images, name }: { images: string[]; name: string }) {
 
       {/* Counter badge */}
       {images.length > 1 && (
-        <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+        <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full z-10 pointer-events-none">
           {current + 1} / {images.length}
         </div>
       )}
 
       {/* Dots */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {images.map((_, idx) => (
             <button
+              type="button"
               key={idx}
-              onClick={() => setCurrent(idx)}
-              className={`h-2.5 rounded-full transition-all ${
-                idx === current ? "bg-white w-7" : "bg-white/50 hover:bg-white/80 w-2.5"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent(idx); }}
+              className={`h-3 rounded-full transition-all cursor-pointer ${
+                idx === current ? "bg-white w-8" : "bg-white/50 hover:bg-white/80 w-3"
               }`}
+              aria-label={`Фото ${idx + 1}`}
             />
           ))}
         </div>
       )}
 
-      <div className="absolute bottom-12 left-6">
+      <div className="absolute bottom-12 left-6 z-10 pointer-events-none">
         <h3 className="text-2xl font-bold text-white drop-shadow-lg">{name}</h3>
       </div>
     </div>
