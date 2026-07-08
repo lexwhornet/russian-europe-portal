@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { adminUsers, posts, siteContent, mediaLinks, blogArticles, presentations } from "@/db/schema";
 import { sql } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 
 let seeded = false;
 
@@ -84,8 +83,10 @@ export async function seedDatabase() {
 
     console.log("Seeding database...");
 
-    const hash = await bcrypt.hash("RussEurope2024!", 10);
-    await db.insert(adminUsers).values({ username: "admin", passwordHash: hash });
+    // Use pre-computed bcrypt hash instead of runtime bcrypt (Workers compatible)
+    // Hash of "RussEurope2024!" with bcrypt cost 10
+    const precomputedHash = "$2b$10$3ddoQZweOVd0.yqeSd4u1eoHQwnAjR5/kQrn9UKx13rY/wZoynoWm";
+    await db.insert(adminUsers).values({ username: "admin", passwordHash: precomputedHash });
 
     await db.insert(posts).values([
       { title: "Семейная ипотека от 5,5%", content: "Семейная ипотека доступна для семей с одним ребёнком. Минимальный первоначальный взнос 20%, ставка от 5,5% на весь срок кредитования.", imageUrl: "/images/project-re.jpg", telegramLink: "https://max.ru/c/-76476343384803/AZ87eO_uTME", published: true },
