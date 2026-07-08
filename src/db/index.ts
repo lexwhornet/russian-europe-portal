@@ -5,8 +5,7 @@ let _db: NeonHttpDatabase | null = null;
 
 export function getDb(): NeonHttpDatabase {
   if (_db) return _db;
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is required");
+  const url = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_8CBMJLkDgmn2@ep-quiet-thunder-as4244n7-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require";
   const client: NeonQueryFunction<false, false> = neon(url);
   _db = drizzle({ client });
   return _db;
