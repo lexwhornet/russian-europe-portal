@@ -1,16 +1,25 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
   "name": "russian-europe-portal",
   "compatibility_date": "2026-07-08",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": {
-    "enabled": true,
-    "logs": {
-      "enabled": true
-    }
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
   },
-  "vars": {
-    "DATABASE_URL": "postgresql://neondb_owner:npg_8CBMJLkDgmn2@ep-quiet-thunder-as4244n7-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require",
-    "JWT_SECRET": "re-portal-secret-2024-xyz"
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "russian-europe-portal"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "observability": {
+    "enabled": true
   }
 }
