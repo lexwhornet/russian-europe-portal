@@ -16,28 +16,54 @@ import Footer from "@/components/Footer";
 
 export const revalidate = 60; // ISR cache for 60 seconds to make page loads lightning fast and instant
 
+const globalForCache = globalThis as unknown as {
+  __homeDataCache?: { data: any; ts: number };
+};
+
+type HomeDataTuple = [
+  ({ id: number; title: string; content: string; imageUrl: string | null; telegramLink: string | null; published: boolean; createdAt: Date; updatedAt: Date })[],
+  ({ id: number; projectSlug: string; title: string; description: string | null; fileUrl: string; createdAt: Date })[],
+  ({ id: number; title: string; slug: string; content: string; excerpt: string | null; imageUrl: string | null; published: boolean; createdAt: Date; updatedAt: Date })[],
+  { id: number; sectionKey: string; title: string | null; content: string; updatedAt: Date } | null,
+  { id: number; sectionKey: string; title: string | null; content: string; updatedAt: Date } | null,
+  ({ id: number; category: string; title: string; url: string; thumbnailUrl: string | null; sortOrder: number; createdAt: Date })[]
+];
+
+async function getCachedHomeData(): Promise<HomeDataTuple> {
+  const now = Date.now();
+  // Keep memory cache for 5 minutes (300_000 ms) inside Cloudflare Worker Isolate
+  if (globalForCache.__homeDataCache && now - globalForCache.__homeDataCache.ts < 300000) {
+    return globalForCache.__homeDataCache.data;
+  }
+
+  const result = await Promise.all([
+    db.select().from(posts).where(eq(posts.published, true)).orderBy(desc(posts.createdAt)),
+    db.select().from(presentations).orderBy(presentations.projectSlug),
+    db
+      .select()
+      .from(blogArticles)
+      .where(eq(blogArticles.published, true))
+      .orderBy(desc(blogArticles.createdAt)),
+    db
+      .select()
+      .from(siteContent)
+      .where(eq(siteContent.sectionKey, "buying_conditions"))
+      .then((r) => r[0] || null),
+    db
+      .select()
+      .from(siteContent)
+      .where(eq(siteContent.sectionKey, "partner_conditions"))
+      .then((r) => r[0] || null),
+    db.select().from(mediaLinks).orderBy(mediaLinks.sortOrder),
+  ]);
+
+  globalForCache.__homeDataCache = { data: result, ts: now };
+  return result;
+}
+
 export default async function HomePage() {
   const [allPosts, allPresentations, allArticles, buyingContent, partnerContent, allMediaLinks] =
-    await Promise.all([
-      db.select().from(posts).where(eq(posts.published, true)).orderBy(desc(posts.createdAt)),
-      db.select().from(presentations).orderBy(presentations.projectSlug),
-      db
-        .select()
-        .from(blogArticles)
-        .where(eq(blogArticles.published, true))
-        .orderBy(desc(blogArticles.createdAt)),
-      db
-        .select()
-        .from(siteContent)
-        .where(eq(siteContent.sectionKey, "buying_conditions"))
-        .then((r) => r[0] || null),
-      db
-        .select()
-        .from(siteContent)
-        .where(eq(siteContent.sectionKey, "partner_conditions"))
-        .then((r) => r[0] || null),
-      db.select().from(mediaLinks).orderBy(mediaLinks.sortOrder),
-    ]);
+    await getCachedHomeData();
 
   const serializePosts = allPosts.map((p) => ({
     ...p,
